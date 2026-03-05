@@ -128,9 +128,10 @@ packages:
   glovex_liquid_ui:
     dependency: "direct main"
     description:
-      path: "/Users/mac/enyx/packages/enyx_liquid_ui"
-      relative: false
-    source: path
+      name: glovex_liquid_ui
+      sha256: b2396d035a70b76714b4a707cc4b50882ea71b9d6e4d1df99c4d7617699bf9c1
+      url: "https://pub.dev"
+    source: hosted
     version: "1.2.1"
   go_router:
     dependency: transitive
