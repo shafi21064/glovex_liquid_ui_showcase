@@ -397,16 +397,17 @@ class _PubDevStatsService {
 
       final packageJson = jsonDecode(packageResponse.body) as Map<String, dynamic>;
       final scoreJson = jsonDecode(scoreResponse.body) as Map<String, dynamic>;
-      final score = scoreJson['score'] as Map<String, dynamic>?;
+      final scoreData =
+          (scoreJson['score'] as Map<String, dynamic>?) ?? scoreJson;
 
       final latest = packageJson['latest'] as Map<String, dynamic>?;
-        final latestPubspec = latest?['pubspec'] as Map<String, dynamic>?;
-        final liveVersion =
+      final latestPubspec = latest?['pubspec'] as Map<String, dynamic>?;
+      final liveVersion =
           (latestPubspec?['version'] as String?) ?? (latest?['version'] as String?);
-      final livePoints = score?['grantedPoints'] as int?;
-      final liveMaxPoints = score?['maxPoints'] as int?;
-      final liveLikes = score?['likeCount'] as int?;
-      final liveDownloads = score?['downloadCount30Days'] as int?;
+      final livePoints = (scoreData['grantedPoints'] as num?)?.toInt();
+      final liveMaxPoints = (scoreData['maxPoints'] as num?)?.toInt();
+      final liveLikes = (scoreData['likeCount'] as num?)?.toInt();
+      final liveDownloads = (scoreData['downloadCount30Days'] as num?)?.toInt();
 
       return _PubDevStats(
         version: liveVersion == null || liveVersion.isEmpty
