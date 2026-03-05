@@ -34,8 +34,8 @@ jobs:
 
       - name: Build web
         run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          flutter build web --release --base-href "/${REPO_NAME}/"
+          flutter build web --release --base-href "/"
+          echo "showcase.glovency.com" > build/web/CNAME
           touch build/web/.nojekyll
 
       - name: Upload Pages artifact
