@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'glovex_liquid_ui/showcase_app.dart';
 
@@ -8,12 +8,22 @@ class DemoPackage {
     required this.summary,
     required this.packageSite,
     required this.demoBuilder,
+    this.category = 'UI Design',
+    this.version = 'v1.0.0',
+    this.pubPoints = 140,
+    this.likes = 0,
+    this.icon = Icons.widgets_outlined,
   });
 
   final String name;
   final String summary;
   final String packageSite;
   final WidgetBuilder demoBuilder;
+  final String category;
+  final String version;
+  final int pubPoints;
+  final int likes;
+  final IconData icon;
 
   String get packagePath => '/package/$name';
   String get demoPath => '/demo/$name';
@@ -25,6 +35,11 @@ const demoPackages = <DemoPackage>[
     summary: 'Liquid glass widgets showcase for Flutter apps.',
     packageSite: 'https://pub.dev/packages/glovex_liquid_ui',
     demoBuilder: _glovexLiquidUiDemoBuilder,
+    category: 'UI Design',
+    version: 'v1.2.1',
+    pubPoints: 140,
+    likes: 46,
+    icon: Icons.auto_awesome_outlined,
   ),
 ];
 

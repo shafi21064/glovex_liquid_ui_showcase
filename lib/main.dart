@@ -89,58 +89,102 @@ class _LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Package Hub')),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+        title: const Text('Flutter Package Hub'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF0175C2),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {},
+              child: const Text('Publish Package'),
+            ),
+          ),
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          const horizontalPadding = 20.0;
-          const gridSpacing = 16.0;
+          const horizontalPadding = 24.0;
+          const gridSpacing = 18.0;
           final contentWidth = constraints.maxWidth - (horizontalPadding * 2);
-          final columns = contentWidth >= 980 ? 2 : 1;
+          final columns = contentWidth >= 1100
+              ? 3
+              : contentWidth >= 760
+              ? 2
+              : 1;
           final cardWidth =
               (contentWidth - (gridSpacing * (columns - 1))) / columns;
 
           return SingleChildScrollView(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1100),
+                constraints: const BoxConstraints(maxWidth: 1240),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
                     horizontalPadding,
-                    20,
-                    horizontalPadding,
                     28,
+                    horizontalPadding,
+                    36,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Flutter Package Showcases',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w700),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Discover top-tier Flutter packages',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: const Color(0xFF0F172A),
+                                fontWeight: FontWeight.w800,
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Browse package demos and open package details from one place.',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 10),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 760),
+                              child: Text(
+                                'A clean and professional hub to browse Flutter package demos. '
+                                'Each card provides a live demo and direct package link.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: const Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                              const SizedBox(height: 12),
-                              Chip(
-                                label: Text('${demoPackages.length} package demo(s)'),
-                                avatar: const Icon(CupertinoIcons.cube_box, size: 16),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              alignment: WrapAlignment.center,
+                              children: const [
+                                _CategoryChip(label: 'All', selected: true),
+                                _CategoryChip(label: 'UI Design'),
+                                _CategoryChip(label: 'State Management'),
+                                _CategoryChip(label: 'Animation'),
+                                _CategoryChip(label: 'Network'),
+                                _CategoryChip(label: 'Database'),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 22),
                       Wrap(
                         spacing: gridSpacing,
                         runSpacing: gridSpacing,
@@ -152,6 +196,8 @@ class _LandingPage extends StatelessWidget {
                             ),
                         ],
                       ),
+                      const SizedBox(height: 30),
+                      const _LandingFooter(),
                     ],
                   ),
                 ),
@@ -171,64 +217,195 @@ class _PackageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              package.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            Text(package.summary),
-            const SizedBox(height: 12),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isCompact = constraints.maxWidth < 480;
-                if (isCompact) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: () => context.go(package.demoPath),
-                        icon: const Icon(CupertinoIcons.play_circle),
-                        label: const Text('Try Demo'),
-                      ),
-                      const SizedBox(height: 10),
-                      OutlinedButton.icon(
-                        onPressed: () => _openPackageUrl(package.packageSite),
-                        icon: const Icon(CupertinoIcons.cube_box),
-                        label: const Text('Package Info'),
-                      ),
-                    ],
-                  );
-                }
-
-                return Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => context.go(package.demoPath),
-                        icon: const Icon(CupertinoIcons.play_circle),
-                        label: const Text('Try Demo'),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0F2FE),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: Icon(package.icon, color: const Color(0xFF0175C2)),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _openPackageUrl(package.packageSite),
-                        icon: const Icon(CupertinoIcons.cube_box),
-                        label: const Text('Package Info'),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        package.version,
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  package.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  package.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF10B981)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${package.pubPoints} Pub Points',
+                      style: const TextStyle(
+                        color: Color(0xFF334155),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(Icons.favorite_rounded, size: 16, color: Color(0xFFF43F5E)),
+                    const SizedBox(width: 4),
+                    Text(
+                      package.likes.toString(),
+                      style: const TextStyle(
+                        color: Color(0xFF334155),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          SizedBox(
+            height: 48,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF0175C2),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(14)),
+                      ),
+                    ),
+                    onPressed: () => context.go(package.demoPath),
+                    child: const Text(
+                      'VIEW DEMO',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const VerticalDivider(width: 1, color: Color(0xFFE2E8F0)),
+                Expanded(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF475569),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(bottomRight: Radius.circular(14)),
+                      ),
+                    ),
+                    onPressed: () => _openPackageUrl(package.packageSite),
+                    child: const Text(
+                      'PACKAGE DETAILS',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({required this.label, this.selected = false});
+
+  final String label;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      backgroundColor: selected ? const Color(0xFF0175C2) : Colors.white,
+      side: BorderSide(
+        color: selected ? const Color(0xFF0175C2) : const Color(0xFFE2E8F0),
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : const Color(0xFF475569),
+          fontWeight: FontWeight.w600,
         ),
+      ),
+    );
+  }
+}
+
+class _LandingFooter extends StatelessWidget {
+  const _LandingFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        alignment: WrapAlignment.spaceBetween,
+        children: const [
+          Text(
+            '© Flutter Package Hub',
+            style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+          ),
+          Text(
+            'Curated demos for Flutter packages',
+            style: TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }
