@@ -199,7 +199,8 @@ class _PackageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fallbackStats = _PubDevStats(
       version: package.version,
-      pubPoints: package.pubPoints,
+      grantedPoints: package.pubPoints,
+      maxPoints: package.maxPubPoints,
       likes: package.likes,
       downloads: package.downloads,
     );
@@ -280,8 +281,8 @@ class _PackageCard extends StatelessWidget {
                           _StatBadge(
                             icon: Icons.verified_rounded,
                             iconColor: const Color(0xFF10B981),
-                            value: '${stats.pubPoints}',
-                            label: 'Pub',
+                            value: '${stats.grantedPoints}/${stats.maxPoints}',
+                            label: 'Pub Points',
                           ),
                           _StatBadge(
                             icon: Icons.favorite_rounded,
@@ -293,7 +294,7 @@ class _PackageCard extends StatelessWidget {
                             icon: Icons.download_rounded,
                             iconColor: const Color(0xFF6DD6FF),
                             value: _formatDownloads(stats.downloads),
-                            label: 'Downloads',
+                            label: '30d DL',
                           ),
                       ],
                     ),
@@ -354,13 +355,15 @@ class _PackageCard extends StatelessWidget {
 class _PubDevStats {
   const _PubDevStats({
     required this.version,
-    required this.pubPoints,
+    required this.grantedPoints,
+    required this.maxPoints,
     required this.likes,
     required this.downloads,
   });
 
   final String version;
-  final int pubPoints;
+  final int grantedPoints;
+  final int maxPoints;
   final int likes;
   final int downloads;
 }
@@ -375,7 +378,8 @@ class _PubDevStatsService {
   static Future<_PubDevStats> _fetchInternal(DemoPackage package) async {
     final fallback = _PubDevStats(
       version: package.version,
-      pubPoints: package.pubPoints,
+      grantedPoints: package.pubPoints,
+      maxPoints: package.maxPubPoints,
       likes: package.likes,
       downloads: package.downloads,
     );
@@ -396,17 +400,22 @@ class _PubDevStatsService {
       final score = scoreJson['score'] as Map<String, dynamic>?;
 
       final latest = packageJson['latest'] as Map<String, dynamic>?;
-      final liveVersion = latest?['version'] as String?;
+        final latestPubspec = latest?['pubspec'] as Map<String, dynamic>?;
+        final liveVersion =
+          (latestPubspec?['version'] as String?) ?? (latest?['version'] as String?);
       final livePoints = score?['grantedPoints'] as int?;
+      final liveMaxPoints = score?['maxPoints'] as int?;
       final liveLikes = score?['likeCount'] as int?;
+      final liveDownloads = score?['downloadCount30Days'] as int?;
 
       return _PubDevStats(
         version: liveVersion == null || liveVersion.isEmpty
             ? fallback.version
             : 'v$liveVersion',
-        pubPoints: livePoints ?? fallback.pubPoints,
+        grantedPoints: livePoints ?? fallback.grantedPoints,
+        maxPoints: liveMaxPoints ?? fallback.maxPoints,
         likes: liveLikes ?? fallback.likes,
-        downloads: fallback.downloads,
+        downloads: liveDownloads ?? fallback.downloads,
       );
     } catch (_) {
       return fallback;

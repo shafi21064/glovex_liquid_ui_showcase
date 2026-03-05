@@ -10,6 +10,7 @@ class DemoPackage {
     required this.demoBuilder,
     this.version = 'v1.0.0',
     this.pubPoints = 140,
+    this.maxPubPoints = 160,
     this.likes = 0,
     this.downloads = 0,
     this.icon = Icons.widgets_outlined,
@@ -21,6 +22,7 @@ class DemoPackage {
   final WidgetBuilder demoBuilder;
   final String version;
   final int pubPoints;
+  final int maxPubPoints;
   final int likes;
   final int downloads;
   final IconData icon;
@@ -37,6 +39,7 @@ const demoPackages = <DemoPackage>[
     demoBuilder: _glovexLiquidUiDemoBuilder,
     version: 'v1.2.1',
     pubPoints: 140,
+    maxPubPoints: 160,
     likes: 46,
     downloads: 12000,
     icon: Icons.auto_awesome_outlined,
