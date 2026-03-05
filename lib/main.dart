@@ -90,54 +90,145 @@ class _LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Flutter Package Hub')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            'All Flutter package showcases',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          const Text('Pick a package and either open demo or view package details.'),
-          const SizedBox(height: 16),
-          for (final package in demoPackages)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      package.name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(package.summary),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () => context.go(package.demoPath),
-                            icon: const Icon(CupertinoIcons.play_circle),
-                            label: const Text('Try Demo'),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          const horizontalPadding = 20.0;
+          const gridSpacing = 16.0;
+          final contentWidth = constraints.maxWidth - (horizontalPadding * 2);
+          final columns = contentWidth >= 980 ? 2 : 1;
+          final cardWidth =
+              (contentWidth - (gridSpacing * (columns - 1))) / columns;
+
+          return SingleChildScrollView(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    20,
+                    horizontalPadding,
+                    28,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Flutter Package Showcases',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Browse package demos and open package details from one place.',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 12),
+                              Chip(
+                                label: Text('${demoPackages.length} package demo(s)'),
+                                avatar: const Icon(CupertinoIcons.cube_box, size: 16),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _openPackageUrl(package.packageSite),
-                            icon: const Icon(CupertinoIcons.cube_box),
-                            label: const Text('Package Info'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: gridSpacing,
+                        runSpacing: gridSpacing,
+                        children: [
+                          for (final package in demoPackages)
+                            SizedBox(
+                              width: cardWidth,
+                              child: _PackageCard(package: package),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-        ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PackageCard extends StatelessWidget {
+  const _PackageCard({required this.package});
+
+  final DemoPackage package;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              package.name,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(package.summary),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 480;
+                if (isCompact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () => context.go(package.demoPath),
+                        icon: const Icon(CupertinoIcons.play_circle),
+                        label: const Text('Try Demo'),
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        onPressed: () => _openPackageUrl(package.packageSite),
+                        icon: const Icon(CupertinoIcons.cube_box),
+                        label: const Text('Package Info'),
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => context.go(package.demoPath),
+                        icon: const Icon(CupertinoIcons.play_circle),
+                        label: const Text('Try Demo'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openPackageUrl(package.packageSite),
+                        icon: const Icon(CupertinoIcons.cube_box),
+                        label: const Text('Package Info'),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -161,31 +252,52 @@ class _PackageDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(package.name)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            package.name,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 860),
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        package.name,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(package.summary),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Package link',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      SelectableText(package.packageSite),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () => context.go(package.demoPath),
+                icon: const Icon(CupertinoIcons.play_circle),
+                label: const Text('Open Demo Page'),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Back to Landing'),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(package.summary),
-          const SizedBox(height: 16),
-          const Text('Package link', style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 6),
-          SelectableText(package.packageSite),
-          const SizedBox(height: 20),
-          FilledButton.icon(
-            onPressed: () => context.go(package.demoPath),
-            icon: const Icon(CupertinoIcons.play_circle),
-            label: const Text('Open Demo Page'),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            onPressed: () => context.go('/'),
-            child: const Text('Back to Landing'),
-          ),
-        ],
+        ),
       ),
     );
   }
