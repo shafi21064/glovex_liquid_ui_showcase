@@ -1,15 +1,15 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:glovex_liquid_ui/glovex_liquid_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'demo/demo_registry.dart';
 
 const bool _enableDevicePreview = bool.fromEnvironment(
   'DEVICE_PREVIEW',
-  defaultValue: !kReleaseMode,
+  defaultValue: true,
 );
 
 void main() {
@@ -126,7 +126,7 @@ class _LandingPage extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => context.go(package.packagePath),
+                            onPressed: () => _openPackageUrl(package.packageSite),
                             icon: const Icon(CupertinoIcons.cube_box),
                             label: const Text('Package Info'),
                           ),
@@ -141,6 +141,15 @@ class _LandingPage extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _openPackageUrl(String url) async {
+  final uri = Uri.parse(url);
+  await launchUrl(
+    uri,
+    mode: LaunchMode.externalApplication,
+    webOnlyWindowName: '_blank',
+  );
 }
 
 class _PackageDetailsPage extends StatelessWidget {
