@@ -78,6 +78,7 @@ final GoRouter _router = GoRouter(
           return DevicePreview(
             enabled: _enableDevicePreview,
             builder: package.demoBuilder,
+            backgroundColor: Colors.black45,
           );
         }
         return _NotFoundPage(packageName: packageName);
@@ -135,7 +136,7 @@ class _LandingPage extends StatelessWidget {
                         child: Column(
                           children: [
                             Text(
-                              'discover flutter packages by us',
+                              'Discover flutter packages by us',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: Colors.white,
@@ -157,7 +158,7 @@ class _LandingPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              '${demoPackages.length} package demo(s) available',
+                              '${demoPackages.length} package available',
                               style: const TextStyle(
                                 color: Color(0xFF6DD6FF),
                                 fontWeight: FontWeight.w700,
@@ -199,6 +200,7 @@ class _PackageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fallbackStats = _PubDevStats(
       version: package.version,
+      description: package.summary,
       grantedPoints: package.pubPoints,
       maxPoints: package.maxPubPoints,
       likes: package.likes,
@@ -266,7 +268,7 @@ class _PackageCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      package.summary,
+                      stats.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -294,7 +296,7 @@ class _PackageCard extends StatelessWidget {
                             icon: Icons.download_rounded,
                             iconColor: const Color(0xFF6DD6FF),
                             value: _formatDownloads(stats.downloads),
-                            label: '30d DL',
+                            label: '/month',
                           ),
                       ],
                     ),
@@ -355,6 +357,7 @@ class _PackageCard extends StatelessWidget {
 class _PubDevStats {
   const _PubDevStats({
     required this.version,
+    required this.description,
     required this.grantedPoints,
     required this.maxPoints,
     required this.likes,
@@ -362,6 +365,7 @@ class _PubDevStats {
   });
 
   final String version;
+  final String description;
   final int grantedPoints;
   final int maxPoints;
   final int likes;
@@ -378,6 +382,7 @@ class _PubDevStatsService {
   static Future<_PubDevStats> _fetchInternal(DemoPackage package) async {
     final fallback = _PubDevStats(
       version: package.version,
+      description: package.summary,
       grantedPoints: package.pubPoints,
       maxPoints: package.maxPubPoints,
       likes: package.likes,
@@ -404,6 +409,7 @@ class _PubDevStatsService {
       final latestPubspec = latest?['pubspec'] as Map<String, dynamic>?;
       final liveVersion =
           (latestPubspec?['version'] as String?) ?? (latest?['version'] as String?);
+        final liveDescription = latestPubspec?['description'] as String?;
       final livePoints = (scoreData['grantedPoints'] as num?)?.toInt();
       final liveMaxPoints = (scoreData['maxPoints'] as num?)?.toInt();
       final liveLikes = (scoreData['likeCount'] as num?)?.toInt();
@@ -413,6 +419,9 @@ class _PubDevStatsService {
         version: liveVersion == null || liveVersion.isEmpty
             ? fallback.version
             : 'v$liveVersion',
+        description: liveDescription == null || liveDescription.isEmpty
+          ? fallback.description
+          : liveDescription,
         grantedPoints: livePoints ?? fallback.grantedPoints,
         maxPoints: liveMaxPoints ?? fallback.maxPoints,
         likes: liveLikes ?? fallback.likes,

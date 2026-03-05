@@ -5,6 +5,6 @@ import 'package:glovex_liquid_ui_showcase/main.dart';
 void main() {
   testWidgets('showcase app renders', (tester) async {
     await tester.pumpWidget(const ShowcaseWebsiteApp());
-    expect(find.textContaining('discover flutter packages by us'), findsOneWidget);
+    expect(find.textContaining('Discover flutter packages by us'), findsOneWidget);
   });
 }
