@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:glovex_liquid_ui/glovex_liquid_ui.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'demo/demo_registry.dart';
@@ -89,26 +92,7 @@ class _LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        title: const Text('Flutter Package Hub'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0175C2),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {},
-              child: const Text('Publish Package'),
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFF060B1A),
       body: LayoutBuilder(
         builder: (context, constraints) {
           const horizontalPadding = 24.0;
@@ -138,19 +122,23 @@ class _LandingPage extends StatelessWidget {
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF111B38), Color(0xFF0B1228)],
+                          ),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: const Color(0xFF223157)),
                         ),
                         child: Column(
                           children: [
                             Text(
-                              'Discover top-tier Flutter packages',
+                              'discover flutter packages by us',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: const Color(0xFF0F172A),
+                                color: Colors.white,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -158,28 +146,22 @@ class _LandingPage extends StatelessWidget {
                             ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 760),
                               child: Text(
-                                'A clean and professional hub to browse Flutter package demos. '
-                                'Each card provides a live demo and direct package link.',
+                                'Curated package demos with live stats, quick preview access, '
+                                'and direct package links for your next Flutter app.',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: const Color(0xFF64748B),
+                                  color: const Color(0xFF93A4D0),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              alignment: WrapAlignment.center,
-                              children: const [
-                                _CategoryChip(label: 'All', selected: true),
-                                _CategoryChip(label: 'UI Design'),
-                                _CategoryChip(label: 'State Management'),
-                                _CategoryChip(label: 'Animation'),
-                                _CategoryChip(label: 'Network'),
-                                _CategoryChip(label: 'Database'),
-                              ],
+                            const SizedBox(height: 14),
+                            Text(
+                              '${demoPackages.length} package demo(s) available',
+                              style: const TextStyle(
+                                color: Color(0xFF6DD6FF),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ],
                         ),
@@ -196,8 +178,6 @@ class _LandingPage extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 30),
-                      const _LandingFooter(),
                     ],
                   ),
                 ),
@@ -217,198 +197,264 @@ class _PackageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fallbackStats = _PubDevStats(
+      version: package.version,
+      pubPoints: package.pubPoints,
+      likes: package.likes,
+      downloads: package.downloads,
+    );
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0E162F),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF26365F)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: FutureBuilder<_PubDevStats>(
+        future: _PubDevStatsService.fetch(package),
+        builder: (context, snapshot) {
+          final stats = snapshot.data ?? fallbackStats;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F2FE),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(package.icon, color: const Color(0xFF0175C2)),
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1B2F57),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(package.icon, color: const Color(0xFF6DD6FF)),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1A2748),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            stats.version,
+                            style: const TextStyle(
+                              color: Color(0xFFB9C9F2),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 12),
+                    Text(
+                      package.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
-                      child: Text(
-                        package.version,
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      package.summary,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Color(0xFFA6B4DA),
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                          _StatBadge(
+                            icon: Icons.verified_rounded,
+                            iconColor: const Color(0xFF10B981),
+                            value: '${stats.pubPoints}',
+                            label: 'Pub',
+                          ),
+                          _StatBadge(
+                            icon: Icons.favorite_rounded,
+                            iconColor: const Color(0xFFF43F5E),
+                            value: '${stats.likes}',
+                            label: 'Likes',
+                          ),
+                          _StatBadge(
+                            icon: Icons.download_rounded,
+                            iconColor: const Color(0xFF6DD6FF),
+                            value: _formatDownloads(stats.downloads),
+                            label: 'Downloads',
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+                const Divider(height: 1, color: Color(0xFF26365F)),
+              SizedBox(
+                height: 48,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF6DD6FF),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(14),
+                            ),
+                          ),
+                        ),
+                        onPressed: () => context.go(package.demoPath),
+                        child: const Text(
+                          'VIEW DEMO',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                    const VerticalDivider(width: 1, color: Color(0xFFE2E8F0)),
+                    Expanded(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFB2C1EA),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(14),
+                            ),
+                          ),
+                        ),
+                        onPressed: () => _openPackageUrl(package.packageSite),
+                        child: const Text(
+                          'PACKAGE DETAILS',
+                          style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  package.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  package.summary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF10B981)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${package.pubPoints} Pub Points',
-                      style: const TextStyle(
-                        color: Color(0xFF334155),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Icon(Icons.favorite_rounded, size: 16, color: Color(0xFFF43F5E)),
-                    const SizedBox(width: 4),
-                    Text(
-                      package.likes.toString(),
-                      style: const TextStyle(
-                        color: Color(0xFF334155),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1, color: Color(0xFFE2E8F0)),
-          SizedBox(
-            height: 48,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF0175C2),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(14)),
-                      ),
-                    ),
-                    onPressed: () => context.go(package.demoPath),
-                    child: const Text(
-                      'VIEW DEMO',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-                const VerticalDivider(width: 1, color: Color(0xFFE2E8F0)),
-                Expanded(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF475569),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(bottomRight: Radius.circular(14)),
-                      ),
-                    ),
-                    onPressed: () => _openPackageUrl(package.packageSite),
-                    child: const Text(
-                      'PACKAGE DETAILS',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({required this.label, this.selected = false});
+class _PubDevStats {
+  const _PubDevStats({
+    required this.version,
+    required this.pubPoints,
+    required this.likes,
+    required this.downloads,
+  });
 
+  final String version;
+  final int pubPoints;
+  final int likes;
+  final int downloads;
+}
+
+class _PubDevStatsService {
+  static final Map<String, Future<_PubDevStats>> _cache = {};
+
+  static Future<_PubDevStats> fetch(DemoPackage package) {
+    return _cache.putIfAbsent(package.name, () => _fetchInternal(package));
+  }
+
+  static Future<_PubDevStats> _fetchInternal(DemoPackage package) async {
+    final fallback = _PubDevStats(
+      version: package.version,
+      pubPoints: package.pubPoints,
+      likes: package.likes,
+      downloads: package.downloads,
+    );
+
+    try {
+      final packageUri = Uri.parse('https://pub.dev/api/packages/${package.name}');
+      final scoreUri = Uri.parse('https://pub.dev/api/packages/${package.name}/score');
+
+      final packageResponse = await http.get(packageUri);
+      final scoreResponse = await http.get(scoreUri);
+
+      if (packageResponse.statusCode != 200 || scoreResponse.statusCode != 200) {
+        return fallback;
+      }
+
+      final packageJson = jsonDecode(packageResponse.body) as Map<String, dynamic>;
+      final scoreJson = jsonDecode(scoreResponse.body) as Map<String, dynamic>;
+      final score = scoreJson['score'] as Map<String, dynamic>?;
+
+      final latest = packageJson['latest'] as Map<String, dynamic>?;
+      final liveVersion = latest?['version'] as String?;
+      final livePoints = score?['grantedPoints'] as int?;
+      final liveLikes = score?['likeCount'] as int?;
+
+      return _PubDevStats(
+        version: liveVersion == null || liveVersion.isEmpty
+            ? fallback.version
+            : 'v$liveVersion',
+        pubPoints: livePoints ?? fallback.pubPoints,
+        likes: liveLikes ?? fallback.likes,
+        downloads: fallback.downloads,
+      );
+    } catch (_) {
+      return fallback;
+    }
+  }
+}
+
+class _StatBadge extends StatelessWidget {
+  const _StatBadge({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String value;
   final String label;
-  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      backgroundColor: selected ? const Color(0xFF0175C2) : Colors.white,
-      side: BorderSide(
-        color: selected ? const Color(0xFF0175C2) : const Color(0xFFE2E8F0),
-      ),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: selected ? Colors.white : const Color(0xFF475569),
-          fontWeight: FontWeight.w600,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 4),
+        Text(
+          '$value $label',
+          style: const TextStyle(
+            color: Color(0xFFD1DCFF),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ),
+      ],
     );
   }
 }
 
-class _LandingFooter extends StatelessWidget {
-  const _LandingFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 8,
-        alignment: WrapAlignment.spaceBetween,
-        children: const [
-          Text(
-            '© Flutter Package Hub',
-            style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-          ),
-          Text(
-            'Curated demos for Flutter packages',
-            style: TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
+String _formatDownloads(int value) {
+  if (value >= 1000000) {
+    return '${(value / 1000000).toStringAsFixed(1)}M';
   }
+  if (value >= 1000) {
+    return '${(value / 1000).toStringAsFixed(1)}K';
+  }
+  return '$value';
 }
 
 Future<void> _openPackageUrl(String url) async {

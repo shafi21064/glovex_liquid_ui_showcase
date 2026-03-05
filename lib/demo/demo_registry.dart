@@ -8,10 +8,10 @@ class DemoPackage {
     required this.summary,
     required this.packageSite,
     required this.demoBuilder,
-    this.category = 'UI Design',
     this.version = 'v1.0.0',
     this.pubPoints = 140,
     this.likes = 0,
+    this.downloads = 0,
     this.icon = Icons.widgets_outlined,
   });
 
@@ -19,10 +19,10 @@ class DemoPackage {
   final String summary;
   final String packageSite;
   final WidgetBuilder demoBuilder;
-  final String category;
   final String version;
   final int pubPoints;
   final int likes;
+  final int downloads;
   final IconData icon;
 
   String get packagePath => '/package/$name';
@@ -35,10 +35,10 @@ const demoPackages = <DemoPackage>[
     summary: 'Liquid glass widgets showcase for Flutter apps.',
     packageSite: 'https://pub.dev/packages/glovex_liquid_ui',
     demoBuilder: _glovexLiquidUiDemoBuilder,
-    category: 'UI Design',
     version: 'v1.2.1',
     pubPoints: 140,
     likes: 46,
+    downloads: 12000,
     icon: Icons.auto_awesome_outlined,
   ),
 ];
