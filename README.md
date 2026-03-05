@@ -1,6 +1,25 @@
 # glovex_liquid_ui_showcase
 
-Showcase app for `glovex_liquid_ui` with `device_preview` enabled in debug/profile and disabled in release builds.
+Router-based Flutter website for package showcases.
+
+## Website structure
+
+- Landing page: `/`
+- Package details: `/package/<package_name>`
+- Demo page: `/demo/<package_name>`
+
+Current live domain target:
+
+- `https://flutter-package.glovency.com`
+
+Current demo:
+
+- `https://flutter-package.glovency.com/demo/glovex_liquid_ui`
+
+Landing list includes two actions per package:
+
+- `Try Demo`
+- `Package Info`
 
 ## Local development
 
@@ -9,35 +28,53 @@ flutter pub get
 flutter run
 ```
 
-To run on web locally:
+Web:
 
 ```bash
 flutter run -d chrome
 ```
 
-## Device Preview integration
+## Demo architecture
 
-- Dependency: `device_preview: ^1.3.1`
-- `DevicePreview` wraps `ShowcaseApp` in `main.dart`
-- `MaterialApp` uses `DevicePreview.locale(context)` and `DevicePreview.appBuilder`
+- Demo code stays inside this project under `lib/demo/<package_name>/`
+- Demo registry is centralized in `lib/demo/demo_registry.dart`
+- Router and pages are managed in `lib/main.dart`
+
+### Device Preview behavior
+
+- `device_preview: ^1.3.1` is used
+- Device preview is enabled only on demo routes (`/demo/<package_name>`)
+- Landing and package pages do not use device preview
+
+## Add a new package demo
+
+1. Create folder: `lib/demo/<package_name>/`
+2. Add your demo page widget there
+3. Import and register a `DemoPackage` entry in `lib/demo/demo_registry.dart`
+
+After registration, landing list + package page + demo route work automatically.
 
 ## GitHub Pages deployment
 
-This repository includes a workflow at `.github/workflows/deploy-web.yml`.
+Workflow file: `.github/workflows/deploy-web.yml`
 
-### One-time GitHub settings
+### One-time GitHub setup
 
-1. Push this project to a GitHub repository.
-2. In GitHub, go to **Settings → Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+1. Push this repository to GitHub.
+2. Open **Settings → Pages**.
+3. Set **Source** to **GitHub Actions**.
+4. Set custom domain to `flutter-package.glovency.com`.
 
 ### Deploy
 
-- Push to the `main` branch, or run the workflow manually from **Actions**.
-- The workflow builds with:
+- Push to `main` or `master`, or run workflow manually.
+- Web build command:
 
 ```bash
-flutter build web --release --base-href "/<repo-name>/"
+flutter build web --release --base-href "/"
 ```
 
-This base href makes the app work correctly on GitHub Pages project URLs.
+The workflow also writes:
+
+- `CNAME` with `flutter-package.glovency.com`
+- `404.html` fallback for SPA route refresh support
